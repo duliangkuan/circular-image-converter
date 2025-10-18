@@ -212,5 +212,9 @@ def health_check():
         'service': '圆形图片转换服务'
     })
 
+# Vercel兼容性
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+# 为Vercel提供应用实例
+application = app
