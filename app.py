@@ -12,13 +12,14 @@ app = Flask(__name__)
 CORS(app)  # 允许跨域请求
 
 # 配置
-UPLOAD_FOLDER = 'uploads'
-OUTPUT_FOLDER = 'outputs'
+UPLOAD_FOLDER = '/tmp/uploads'  # Vercel使用/tmp目录
+OUTPUT_FOLDER = '/tmp/outputs'  # Vercel使用/tmp目录
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
 
-# 创建必要的文件夹
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+# 创建必要的文件夹（仅在非Vercel环境）
+if not os.environ.get('VERCEL'):
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     """检查文件扩展名是否允许"""
@@ -162,21 +163,17 @@ def upload_file():
                     'error': str(e)
                 }), 500
             
-            # 保存处理后的图片
-            filename = f"{uuid.uuid4()}.png"
-            filepath = os.path.join(OUTPUT_FOLDER, filename)
-            circular_image.save(filepath, 'PNG')
-            
-            # 转换为base64返回
+            # 转换为base64返回（Vercel环境不保存文件）
             output_buffer = io.BytesIO()
             circular_image.save(output_buffer, format='PNG')
             output_base64 = base64.b64encode(output_buffer.getvalue()).decode('utf-8')
+            
+            filename = f"{uuid.uuid4()}.png"
             
             return jsonify({
                 'success': True,
                 'image_base64': output_base64,
                 'filename': filename,
-                'download_url': f'/download/{filename}',
                 'message': '图片已成功转换为圆形轮廓'
             })
         else:
@@ -193,15 +190,10 @@ def upload_file():
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    """下载处理后的图片"""
-    try:
-        filepath = os.path.join(OUTPUT_FOLDER, filename)
-        if os.path.exists(filepath):
-            return send_file(filepath, as_attachment=True)
-        else:
-            return jsonify({'error': '文件不存在'}), 404
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    """下载处理后的图片（Vercel环境不支持文件下载）"""
+    return jsonify({
+        'error': '在Vercel环境中不支持文件下载，请使用API接口获取base64数据'
+    }), 501
 
 @app.route('/api/health')
 def health_check():
