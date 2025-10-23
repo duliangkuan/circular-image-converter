@@ -1,4 +1,4 @@
-# 圆形图片转换网站 - Flask后端
+# 圆形图片转换网站 - 国内部署版本
 from flask import Flask, request, jsonify, render_template, send_file
 from flask_cors import CORS
 import base64
@@ -13,16 +13,15 @@ from urllib.parse import urlparse
 app = Flask(__name__)
 CORS(app)  # 允许跨域请求
 
-# 配置
-UPLOAD_FOLDER = '/tmp/uploads'  # Vercel使用/tmp目录
-OUTPUT_FOLDER = '/tmp/outputs'  # Vercel使用/tmp目录
+# 配置 - 国内部署版本
+UPLOAD_FOLDER = 'uploads'
+OUTPUT_FOLDER = 'outputs'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
-BASE_URL = os.environ.get('BASE_URL', 'https://your-app.vercel.app')  # 您的网站域名
+BASE_URL = os.environ.get('BASE_URL', 'https://api.songgeixiaopengyoudeliwu.icu')  # 国内域名
 
-# 创建必要的文件夹（仅在非Vercel环境）
-if not os.environ.get('VERCEL'):
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+# 创建必要的文件夹
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     """检查文件扩展名是否允许"""
@@ -59,19 +58,11 @@ def download_image_from_url(image_url):
 def save_image_to_file(image, filename):
     """保存图片到文件并返回URL"""
     try:
-        # 在Vercel环境中，我们使用临时存储
-        if os.environ.get('VERCEL'):
-            # Vercel环境：保存到/tmp目录，但实际返回base64
-            # 这里我们返回一个包含文件信息的响应
-            output_buffer = io.BytesIO()
-            image.save(output_buffer, format='PNG')
-            return output_buffer.getvalue()
-        else:
-            # 非Vercel环境：保存到outputs目录
-            os.makedirs(OUTPUT_FOLDER, exist_ok=True)
-            file_path = os.path.join(OUTPUT_FOLDER, filename)
-            image.save(file_path, format='PNG')
-            return f"{BASE_URL}/download/{filename}"
+        # 保存到outputs目录
+        os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+        file_path = os.path.join(OUTPUT_FOLDER, filename)
+        image.save(file_path, format='PNG')
+        return f"{BASE_URL}/download/{filename}"
     except Exception as e:
         raise Exception(f"保存图片失败: {str(e)}")
 
@@ -230,33 +221,17 @@ def convert_image_from_url():
         
         # 根据返回类型处理结果
         if return_type == 'url':
-            # 尝试保存文件并返回URL
+            # 保存文件并返回URL
             try:
-                if os.environ.get('VERCEL'):
-                    # Vercel环境：返回base64数据，但格式化为URL格式
-                    output_buffer = io.BytesIO()
-                    circular_image.save(output_buffer, format='PNG')
-                    output_base64 = base64.b64encode(output_buffer.getvalue()).decode('utf-8')
-                    
-                    return jsonify({
-                        'success': True,
-                        'image_url': f"data:image/png;base64,{output_base64}",
-                        'image_base64': output_base64,
-                        'filename': filename,
-                        'message': '图片已成功转换为圆形轮廓（Vercel环境返回base64格式）',
-                        'timestamp': datetime.now().isoformat()
-                    })
-                else:
-                    # 非Vercel环境：保存文件并返回URL
-                    image_url_result = save_image_to_file(circular_image, filename)
-                    
-                    return jsonify({
-                        'success': True,
-                        'image_url': image_url_result,
-                        'filename': filename,
-                        'message': '图片已成功转换为圆形轮廓',
-                        'timestamp': datetime.now().isoformat()
-                    })
+                image_url_result = save_image_to_file(circular_image, filename)
+                
+                return jsonify({
+                    'success': True,
+                    'image_url': image_url_result,
+                    'filename': filename,
+                    'message': '图片已成功转换为圆形轮廓',
+                    'timestamp': datetime.now().isoformat()
+                })
             except Exception as e:
                 return jsonify({
                     'success': False,
@@ -312,7 +287,7 @@ def upload_file():
                     'error': str(e)
                 }), 500
             
-            # 转换为base64返回（Vercel环境不保存文件）
+            # 转换为base64返回
             output_buffer = io.BytesIO()
             circular_image.save(output_buffer, format='PNG')
             output_base64 = base64.b64encode(output_buffer.getvalue()).decode('utf-8')
@@ -341,11 +316,6 @@ def upload_file():
 def download_file(filename):
     """下载处理后的图片"""
     try:
-        if os.environ.get('VERCEL'):
-            return jsonify({
-                'error': '在Vercel环境中不支持文件下载，请使用API接口获取base64数据'
-            }), 501
-        
         # 检查文件是否存在
         file_path = os.path.join(OUTPUT_FOLDER, filename)
         if not os.path.exists(file_path):
@@ -366,12 +336,10 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'service': '圆形图片转换服务'
+        'service': '圆形图片转换服务（国内版）',
+        'version': '2.0',
+        'features': ['base64_input', 'url_input', 'url_output', 'file_download']
     })
 
-# Vercel兼容性
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
-
-# 为Vercel提供应用实例
-application = app
