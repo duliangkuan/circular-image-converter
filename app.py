@@ -19,10 +19,7 @@ OUTPUT_FOLDER = '/tmp/outputs'  # Vercel使用/tmp目录
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
 BASE_URL = os.environ.get('BASE_URL', 'https://zhuanhua-pkc41k2c6-duliangkuans-projects.vercel.app')  # 使用Vercel域名
 
-# 创建必要的文件夹（仅在非Vercel环境）
-if not os.environ.get('VERCEL'):
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+# 在Vercel环境中不需要创建文件夹，直接使用内存处理
 
 def allowed_file(filename):
     """检查文件扩展名是否允许"""
@@ -67,10 +64,17 @@ def save_image_to_file(image, filename):
             return f"data:image/png;base64,{output_base64}"
         else:
             # 非Vercel环境：保存到outputs目录
-            os.makedirs(OUTPUT_FOLDER, exist_ok=True)
-            file_path = os.path.join(OUTPUT_FOLDER, filename)
-            image.save(file_path, format='PNG')
-            return f"{BASE_URL}/download/{filename}"
+            try:
+                os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+                file_path = os.path.join(OUTPUT_FOLDER, filename)
+                image.save(file_path, format='PNG')
+                return f"{BASE_URL}/download/{filename}"
+            except OSError:
+                # 如果无法创建文件夹，返回base64格式
+                output_buffer = io.BytesIO()
+                image.save(output_buffer, format='PNG')
+                output_base64 = base64.b64encode(output_buffer.getvalue()).decode('utf-8')
+                return f"data:image/png;base64,{output_base64}"
     except Exception as e:
         raise Exception(f"保存图片失败: {str(e)}")
 
