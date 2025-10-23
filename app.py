@@ -350,5 +350,8 @@ def health_check():
         'features': ['base64_input', 'url_input', 'url_output', 'file_download']
     })
 
+# Vercel需要这个变量来识别Flask应用
+app = app
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
