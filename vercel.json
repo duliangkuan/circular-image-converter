@@ -2,18 +2,19 @@
   "version": 2,
   "builds": [
     {
-      "src": "app_domestic.py",
+      "src": "app.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "app_domestic.py"
+      "dest": "app.py"
     }
   ],
   "env": {
     "FLASK_ENV": "production",
-    "BASE_URL": "https://api.songgeixiaopengyoudeliwu.icu"
+    "VERCEL": "1",
+    "BASE_URL": "https://zhuanhua-9y1ctr73j-duliangkuans-projects.vercel.app"
   }
 }
