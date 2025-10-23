@@ -15,6 +15,6 @@
   "env": {
     "FLASK_ENV": "production",
     "VERCEL": "1",
-    "BASE_URL": "https://zhuanhua-9y1ctr73j-duliangkuans-projects.vercel.app"
+    "BASE_URL": "https://zhuanhua-k01p9txcr-duliangkuans-projects.vercel.app"
   }
 }
