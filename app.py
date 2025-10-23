@@ -17,7 +17,7 @@ CORS(app)  # 允许跨域请求
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
-BASE_URL = os.environ.get('BASE_URL', 'https://api.songgeixiaopengyoudeliwu.icu')  # 国内域名
+BASE_URL = os.environ.get('BASE_URL', 'https://zhuanhua-k01p9txcr-duliangkuans-projects.vercel.app')
 
 # 创建必要的文件夹
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -116,7 +116,7 @@ def index():
             'health': '/api/health'
         },
         'description': '支持URL输入的圆形图片转换服务',
-        'target_api': 'https://api.songgeixiaopengyoudeliwu.icu/api/convert'
+        'target_api': 'https://zhuanhua-k01p9txcr-duliangkuans-projects.vercel.app/api/convert'
     })
 
 @app.route('/api/convert', methods=['POST'])
