@@ -62,9 +62,8 @@ def save_image_to_file(image, filename):
         os.makedirs(OUTPUT_FOLDER, exist_ok=True)
         file_path = os.path.join(OUTPUT_FOLDER, filename)
         image.save(file_path, format='PNG')
-        # 动态获取当前请求的域名
-        from flask import request
-        base_url = request.url_root.rstrip('/')
+        # 使用环境变量或默认URL
+        base_url = os.environ.get('BASE_URL', 'https://zhuanhua-9asiwamte-duliangkuans-projects.vercel.app')
         return f"{base_url}/download/{filename}"
     except Exception as e:
         raise Exception(f"保存图片失败: {str(e)}")
@@ -354,6 +353,21 @@ def health_check():
         'version': '2.0',
         'features': ['base64_input', 'url_input', 'url_output', 'file_upload', 'file_download']
     })
+
+# 添加错误处理
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({
+        'error': '内部服务器错误',
+        'message': str(error)
+    }), 500
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        'error': '页面未找到',
+        'message': str(error)
+    }), 404
 
 # Vercel需要这个变量来识别Flask应用
 app = app
