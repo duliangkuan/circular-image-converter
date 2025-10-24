@@ -1,5 +1,5 @@
-# 圆形图片转换网站 - 国内部署版本
-from flask import Flask, request, jsonify, render_template, send_file
+# 圆形图片转换网站
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import base64
 import io
@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 app = Flask(__name__)
 CORS(app)  # 允许跨域请求
 
-# 配置 - 国内部署版本
+# 配置
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'}
@@ -62,7 +62,10 @@ def save_image_to_file(image, filename):
         os.makedirs(OUTPUT_FOLDER, exist_ok=True)
         file_path = os.path.join(OUTPUT_FOLDER, filename)
         image.save(file_path, format='PNG')
-        return f"{BASE_URL}/download/{filename}"
+        # 动态获取当前请求的域名
+        from flask import request
+        base_url = request.url_root.rstrip('/')
+        return f"{base_url}/download/{filename}"
     except Exception as e:
         raise Exception(f"保存图片失败: {str(e)}")
 
@@ -109,14 +112,16 @@ def create_circular_image(image_data, size=None):
 def index():
     """主页"""
     return jsonify({
-        'service': '圆形图片转换代理服务',
-        'version': '1.0',
+        'service': '圆形图片转换服务',
+        'version': '2.0',
         'endpoints': {
+            'convert': '/api/convert',
             'convert_url': '/api/convert-url',
+            'upload': '/api/upload',
             'health': '/api/health'
         },
-        'description': '支持URL输入的圆形图片转换服务',
-        'target_api': 'https://zhuanhua-9asiwamte-duliangkuans-projects.vercel.app/api/convert'
+        'description': '支持多种输入方式的圆形图片转换服务',
+        'features': ['base64_input', 'url_input', 'file_upload', 'url_output']
     })
 
 @app.route('/api/convert', methods=['POST'])
@@ -345,9 +350,9 @@ def health_check():
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'service': '圆形图片转换服务（国内版）',
+        'service': '圆形图片转换服务',
         'version': '2.0',
-        'features': ['base64_input', 'url_input', 'url_output', 'file_download']
+        'features': ['base64_input', 'url_input', 'url_output', 'file_upload', 'file_download']
     })
 
 # Vercel需要这个变量来识别Flask应用

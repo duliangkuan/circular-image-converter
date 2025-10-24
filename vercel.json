@@ -14,8 +14,7 @@
   ],
   "env": {
     "FLASK_ENV": "production",
-    "VERCEL": "1",
-    "BASE_URL": "https://zhuanhua-9asiwamte-duliangkuans-projects.vercel.app"
+    "VERCEL": "1"
   },
   "public": true
 }
