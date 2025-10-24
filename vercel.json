@@ -13,9 +13,7 @@
     }
   ],
   "env": {
-    "FLASK_ENV": "production",
-    "VERCEL": "1",
-    "PYTHONPATH": "/var/task"
+    "VERCEL": "1"
   },
   "public": true
 }
